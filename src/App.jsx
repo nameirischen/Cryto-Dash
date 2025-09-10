@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import CoinCard from './Component/CoinCard';
 import LimitSelector from './Component/LimitSelector';
 import FilterInput from './Component/FliterInput';
+import SortSelector from './Component/SortSelector';
 // const API_URL =
 //   'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false';
 
@@ -33,11 +34,29 @@ const App = () => {
     fetchCoins();
   }, [limit]);
 
- const filteredCoins = coins.filter(
-  (coin) =>
-    coin.name.toLowerCase().includes(filter.toLowerCase()) ||
-    coin.symbol.toLowerCase().includes(filter.toLowerCase())
-);
+const filteredCoins = coins
+  .filter(
+    (coin) =>
+      coin.name.toLowerCase().includes(filter.toLowerCase()) ||
+      coin.symbol.toLowerCase().includes(filter.toLowerCase())
+  )
+  .slice() // 🔥 Important: make a shallow copy before sorting!
+  .sort((a, b) => {
+    switch (sortBy) {
+      case 'market_cap_desc':
+        return b.market_cap - a.market_cap;
+      case 'price_desc':
+        return b.current_price - a.current_price;
+      case 'price_asc':
+        return a.current_price - b.current_price;
+      case 'change_desc':
+        return b.price_change_percentage_24h - a.price_change_percentage_24h;
+      case 'change_asc':
+        return a.price_change_percentage_24h - b.price_change_percentage_24h;
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div>
@@ -51,7 +70,8 @@ const App = () => {
 
     <div className='top-controls'>
     <FilterInput filter={filter} onFilterChange={setFliter} ></FilterInput>
-    <LimitSelector limit={limit} onLimitChange={setLimit} />
+    <LimitSelector limit={limit} onLimitChange={setLimit}/>
+    <SortSelector sortBy={sortBy} onSortChange={setSortBy}></SortSelector>
     </div>
 
       {!loading && !error && (
