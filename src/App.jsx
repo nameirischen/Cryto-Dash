@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import CoinCard from './Component/CoinCard';
 import LimitSelector from './Component/LimitSelector';
+import FilterInput from './Component/FliterInput';
 // const API_URL =
 //   'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false';
 
@@ -11,8 +12,9 @@ const App = () => {
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [limit,setLimit]=useState(10);
+  const [filter,setFliter]=useState('');
+  const [sortBy,setSortBy]=useState('market_cap_desc');
 
   useEffect(() => {
     const fetchCoins = async () => {
@@ -31,6 +33,12 @@ const App = () => {
     fetchCoins();
   }, [limit]);
 
+ const filteredCoins = coins.filter(
+  (coin) =>
+    coin.name.toLowerCase().includes(filter.toLowerCase()) ||
+    coin.symbol.toLowerCase().includes(filter.toLowerCase())
+);
+
   return (
     <div>
       <h1>🚀 Crypto Dash</h1>
@@ -41,13 +49,18 @@ const App = () => {
         </div>
       )}
 
-    <LimitSelector limit={limit} onLimitChange={setLimit}></LimitSelector>
+    <div className='top-controls'>
+    <FilterInput filter={filter} onFilterChange={setFliter} ></FilterInput>
+    <LimitSelector limit={limit} onLimitChange={setLimit} />
+    </div>
 
       {!loading && !error && (
         <main className='grid'>
-          {coins.map((coin) => (
+          {filteredCoins.length>0?filteredCoins.map(
+            (coin) => (
             <CoinCard key={coin.id} coin={coin}></CoinCard>
-          ))}
+          ))
+          :(<p>No Matching coins</p>)}
         </main>
       )}
     </div>
